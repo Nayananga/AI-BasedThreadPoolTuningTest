@@ -35,7 +35,7 @@ public class NettyServer {
 
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            latencyTimerContext = ThreadPoolSizeModifier.LATENCY_TIMER.time();
+                            latencyTimerContext = NettyClient.LATENCY_TIMER.time();
                             ChannelPipeline p = ch.pipeline();
                             p.addLast(new HttpServerCodec());
                             p.addLast("aggregator", new HttpObjectAggregator(1048576));

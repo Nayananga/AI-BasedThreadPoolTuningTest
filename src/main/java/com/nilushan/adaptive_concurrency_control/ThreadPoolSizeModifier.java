@@ -21,10 +21,7 @@ public class ThreadPoolSizeModifier implements Runnable {
     private static double oldMeanLatency;
     private static double old99PLatency;
     private static boolean HAS_STARTED, INC_ITR, INC_CHECK_ITR, DEC_ITR, DEC_CHECK_ITR; // Used to identify when the
-    // algorithm is first run
-    // and the 4 iterations when
-    // run() is
-    // executed periodically
+    // algorithm is first run and the 4 iterations when run() is executed periodically
     private static boolean INC_IMPROVED; // Variable to check if increasing thread pool size makes improvements
     private static boolean DEC_IMPROVED; // Variable to check if decreasing thread pool size makes improvements
     int incrementLock, decrementLock;
@@ -62,11 +59,7 @@ public class ThreadPoolSizeModifier implements Runnable {
         resetMemory = 600;
         AdaptiveConcurrencyControl.LOGGER.info(
                 "Thread pool size, Current 10 Second Throughput, Throughput Difference, In pogress count, Average Latency, 99th percentile Latency"); // First
-        // line
-        // of
-        // the
-        // log
-        // file
+        // line of the log file
     }
 
     @Override
@@ -85,8 +78,7 @@ public class ThreadPoolSizeModifier implements Runnable {
             double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time
             // to ms
             double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert
-            // the
-            // time to ms
+            // the time to ms
             AdaptiveConcurrencyControl.LOGGER
                     .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
                             + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency); // Log

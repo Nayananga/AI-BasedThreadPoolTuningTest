@@ -29,10 +29,10 @@ public class Prime1m implements Runnable {
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = ThreadPoolSizeModifier.THROUGHPUT_TIMER.time();
+        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
         ByteBuf buf = null;
         try {
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT++;
+//            ThreadPoolSizeModifier.IN_PROGRESS_COUNT++;
             Random rand = new Random();
             int number = rand.nextInt((1000021) - 1000000) + 1000000;  //Generate random integer between 100000 and 100020
             String resultString = "true";
@@ -43,7 +43,7 @@ public class Prime1m implements Runnable {
                 }
             }
             buf = Unpooled.copiedBuffer(resultString.getBytes());
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT--;
+//            ThreadPoolSizeModifier.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in Prime1m Run method", e);
         }
