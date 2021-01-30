@@ -1,55 +1,44 @@
 package com.nilushan.adaptive_concurrency_control;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpUtil;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
-import java.lang.String;
-import java.util.concurrent.Future;
-
 import com.codahale.metrics.Timer;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-	private String testName;
-	private CustomThreadPool executingPool;
-	private Timer.Context timerContext;
+    private final String testName;
+    private final CustomThreadPool executingPool;
+    private final Timer.Context timerContext;
 
-	public NettyServerHandler(String name, CustomThreadPool pool, Timer.Context tContext) {
-		this.testName = name;
-		this.executingPool = pool;
-		this.timerContext = tContext;
-	}
+    public NettyServerHandler(String name, CustomThreadPool pool, Timer.Context tContext) {
+        this.testName = name;
+        this.executingPool = pool;
+        this.timerContext = tContext;
+    }
 
-	@Override
-	public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
+    @Override
+    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
 
-		if (testName.equals("Prime1m")) {
-			executingPool.submitTask(new Prime1m(ctx, msg, timerContext));
-		} else if (testName.equals("Prime10m")) {
-			executingPool.submitTask(new Prime10m(ctx, msg, timerContext));
-		} else if (testName.equals("DbWrite")) {
-			executingPool.submitTask(new DbWrite(ctx, msg, timerContext));
-		} else if (testName.equals("DbRead")) {
-			executingPool.submitTask(new DbRead(ctx, msg, timerContext));
-		}
-	}
+        switch (testName) {
+            case "Prime1m":
+                executingPool.submitTask(new Prime1m(ctx, msg, timerContext));
+                break;
+            case "Prime10m":
+                executingPool.submitTask(new Prime10m(ctx, msg, timerContext));
+                break;
+            case "DbWrite":
+                executingPool.submitTask(new DbWrite(ctx, msg, timerContext));
+                break;
+            case "DbRead":
+                executingPool.submitTask(new DbRead(ctx, msg, timerContext));
+                break;
+        }
+    }
 
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-		cause.printStackTrace();
-		ctx.close();
-	}
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        cause.printStackTrace();
+        ctx.close();
+    }
 }
