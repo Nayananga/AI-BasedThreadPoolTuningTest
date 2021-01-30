@@ -1,4 +1,4 @@
-.classpath
+u.classpath
 .project
 .settings/
 
@@ -6,3 +6,5 @@ target/
 log/
 
 *.log
+/.idea/
+/adaptive-concurrency-control.iml
