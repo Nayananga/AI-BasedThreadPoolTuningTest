@@ -29,10 +29,10 @@ public class Prime10k implements Runnable {
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = ThreadPoolSizeModifier.THROUGHPUT_TIMER.time();
+        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
         ByteBuf buf = null;
         try {
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT++;
+            NettyClient.IN_PROGRESS_COUNT++;
             Random rand = new Random();
             int number = rand.nextInt((10021) - 10000) + 10000;  //Generate random integer between 10000 and 10020
             String resultString = "true";
@@ -43,7 +43,7 @@ public class Prime10k implements Runnable {
                 }
             }
             buf = Unpooled.copiedBuffer(resultString.getBytes());
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT--;
+            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in Prime100k Run method", e);
         }

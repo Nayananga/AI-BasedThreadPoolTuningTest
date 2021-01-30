@@ -30,10 +30,10 @@ public class DbRead implements Runnable {
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = ThreadPoolSizeModifier.THROUGHPUT_TIMER.time();
+        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
         ByteBuf buf = null;
         try {
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT++;
+            NettyClient.IN_PROGRESS_COUNT++;
             Connection connection = null;
             PreparedStatement stmt = null;
             ResultSet rs = null;
@@ -78,7 +78,7 @@ public class DbRead implements Runnable {
             }
             String readTimestampStr = readTimestamp.toString() + "\n";
             buf = Unpooled.copiedBuffer(readTimestampStr.getBytes());
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT--;
+            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in DbRead Run method", e);
         }

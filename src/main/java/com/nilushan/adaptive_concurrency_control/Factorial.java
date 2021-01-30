@@ -30,10 +30,10 @@ public class Factorial implements Runnable {
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = ThreadPoolSizeModifier.THROUGHPUT_TIMER.time();
+        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
         ByteBuf buf = null;
         try {
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT++;
+            NettyClient.IN_PROGRESS_COUNT++;
             BigInteger result = BigInteger.ONE;
             String resultString;
             int randomNumber = ThreadLocalRandom.current().nextInt(2000, 2999 + 1); // Generate random number between
@@ -46,7 +46,7 @@ public class Factorial implements Runnable {
             // I/O
             // affecting factorial calculation performance
             buf = Unpooled.copiedBuffer(resultString.getBytes());
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT--;
+            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in Factorial Run method", e);
         }

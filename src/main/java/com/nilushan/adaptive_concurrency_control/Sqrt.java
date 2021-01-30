@@ -28,17 +28,17 @@ public class Sqrt implements Runnable {
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = ThreadPoolSizeModifier.THROUGHPUT_TIMER.time();
+        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
         ByteBuf buf = null;
         try {
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT++;
+            NettyClient.IN_PROGRESS_COUNT++;
             String resultString;
             double randomNumber = ThreadLocalRandom.current().nextDouble(6000000000.0000000, 6900000000.0000000 + 1); // Generate
             // random number between 6000000000.0000000 to 6900000000.0000000
             double sqrt = Math.sqrt(randomNumber);
             resultString = sqrt + "\n";
             buf = Unpooled.copiedBuffer(resultString.getBytes());
-            ThreadPoolSizeModifier.IN_PROGRESS_COUNT--;
+            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in Sqrt run method", e);
         }

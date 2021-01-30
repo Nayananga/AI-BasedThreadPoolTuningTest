@@ -18,18 +18,21 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 public class NettyClient implements Runnable {
+    public static int IN_PROGRESS_COUNT;
     public static MetricRegistry METRICS;
     public static HdrBuilder BUILDER;
     public static Timer LATENCY_TIMER;
     public static MetricRegistry METRICS2;
     public static HdrBuilder BUILDER2;
     public static Timer THROUGHPUT_TIMER;
+    public static int oldInProgressCount;
+    private static double oldTenSecondRate;
     int port;
     String host, optimization;
     CustomThreadPool customThreadPool;
 
-    public NettyClient(int portNum, String host, String optimization, CustomThreadPool customThreadPool) {
-        this.port = portNum;
+    public NettyClient(int port, String host, String optimization, CustomThreadPool customThreadPool) {
+        this.port = port;
         this.host = host;
         this.optimization = optimization;
         this.customThreadPool = customThreadPool;
@@ -68,11 +71,21 @@ public class NettyClient implements Runnable {
             ChannelFuture channelFuture = clientBootstrap.connect().sync();
 
             // Send the HTTP request.
+            int currentThreadPoolSize = customThreadPool.getThreadPoolSize();
             double currentTenSecondRate = THROUGHPUT_TIMER.getTenSecondRate();
+            double rateDifference = (currentTenSecondRate - oldTenSecondRate) * 100 / oldTenSecondRate;
+            int currentInProgressCount = IN_PROGRESS_COUNT;
             Snapshot latencySnapshot = LATENCY_TIMER.getSnapshot();
             double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time to ms
             double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
+
+            AdaptiveConcurrencyControl.LOGGER
+                    .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
+                            + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency);
             JSONObject jsonObject = new JSONObject();
+
+            oldTenSecondRate = currentTenSecondRate;
+            oldInProgressCount = currentInProgressCount;
 
             jsonObject.put("currentTenSecondRate", currentTenSecondRate);
             jsonObject.put("currentMeanLatency", currentMeanLatency);
