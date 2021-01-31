@@ -12,7 +12,7 @@ public class AdaptiveConcurrencyControl {
     private static final int THREAD_POOL_MODIFICATION_INITIAL_DELAY = 10;
     private static final int THREAD_POOL_MODIFICATION_PERIOD = 10;
     private static final String CLIENT_HOST = "127.0.0.1";
-    private static final int CLIENT_PORT = 5555;
+    private static final int CLIENT_PORT = 5000;
     private static final int SERVER_PORT = 15000;
     public static Logger LOGGER = LoggerFactory.getLogger(AdaptiveConcurrencyControl.class);
 

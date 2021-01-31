@@ -16,7 +16,6 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
         if (msg instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) msg;
-
             System.out.println("STATUS: " + response.status());
             System.out.println("VERSION: " + response.protocolVersion());
             System.out.println();
@@ -27,31 +26,19 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
                         System.out.println("HEADER: " + name + " = " + value);
                     }
                 }
-                System.out.println();
-            }
-
-            if (HttpUtil.isTransferEncodingChunked(response)) {
-                System.out.println("CHUNKED CONTENT {");
-            } else {
-                System.out.println("CONTENT {");
             }
         }
         if (msg instanceof HttpContent) {
             HttpContent content = (HttpContent) msg;
-
-            System.out.print(content.content().toString(CharsetUtil.UTF_8));
             System.out.flush();
             int currentThreadPoolSize = customThreadPool.getThreadPoolSize();
             int newThreadPoolSize = Integer.parseInt(content.content().toString(CharsetUtil.UTF_8));
+            System.out.println("New ThreadPool Size: " + newThreadPoolSize);
 
-            if (newThreadPoolSize - currentThreadPoolSize > 0) {
+            if (newThreadPoolSize > currentThreadPoolSize) {
                 customThreadPool.incrementPoolTo(newThreadPoolSize);
-            } else if (newThreadPoolSize - currentThreadPoolSize < 0) {
+            } else if (newThreadPoolSize < currentThreadPoolSize) {
                 customThreadPool.decrementPoolSizeTo(newThreadPoolSize);
-            }
-
-            if (content instanceof LastHttpContent) {
-                System.out.println("} END OF CONTENT");
             }
         }
     }
