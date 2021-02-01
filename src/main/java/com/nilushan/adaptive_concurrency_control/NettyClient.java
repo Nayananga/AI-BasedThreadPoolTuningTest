@@ -80,8 +80,10 @@ public class NettyClient implements Runnable {
             double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
 
             AdaptiveConcurrencyControl.LOGGER
-                    .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
-                            + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency);
+                    .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
+                            + currentTenSecondRate + ", " + "rateDifference : " + rateDifference + ", "
+                            + "currentInProgressCount : " + currentInProgressCount + ", " + "currentMeanLatency : "
+                            + currentMeanLatency + ", " + "current99PLatency" + current99PLatency);
             JSONObject jsonObject = new JSONObject();
 
             oldTenSecondRate = currentTenSecondRate;
@@ -90,6 +92,7 @@ public class NettyClient implements Runnable {
             jsonObject.put("currentTenSecondRate", currentTenSecondRate);
             jsonObject.put("currentMeanLatency", currentMeanLatency);
             jsonObject.put("current99PLatency", current99PLatency);
+            jsonObject.put("optimization", optimization);
 
             FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
             request.headers().set(HttpHeaderNames.HOST, host);

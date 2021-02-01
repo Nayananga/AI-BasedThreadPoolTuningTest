@@ -1,5 +1,6 @@
 package com.nilushan.adaptive_concurrency_control;
 
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,9 @@ public class AdaptiveConcurrencyControl {
         int initWorkerThreads = Integer.parseInt(args[1]);
         String optimization = args[2]; // T=Throughput Optimized, M=Mean latency Optimized, 99P=99th Percentile of
         // latency optimized
+        LOGGER.info("Test Name : " + testName + ", " + "Initial Worker Threads : " + initWorkerThreads + ", " + "Optimization : " + ", "
+                        + optimization);
+
         ScheduledExecutorService threadPoolSizeModifier = Executors.newScheduledThreadPool(1); // Create the thread pool
         // to run the periodic thread count adjustment
         CustomThreadPool customThreadPool = new CustomThreadPool(initWorkerThreads); // Create the thread pool to handle
