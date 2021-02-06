@@ -55,7 +55,9 @@ public class CustomThreadPool {
      *
      */
     public int getThreadPoolSize() {
-        return executor.getPoolSize();
+        int corePoolSize = executor.getCorePoolSize();
+        int currentPoolSize = executor.getPoolSize();
+        return Math.max(currentPoolSize, corePoolSize);
     }
 
     public void decrementPoolSizeTo(int n) {
