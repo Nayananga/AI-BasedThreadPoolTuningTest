@@ -16,9 +16,11 @@ import org.json.simple.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class NettyClient implements Runnable {
     public static int IN_PROGRESS_COUNT;
+    public static List<String> COOKIE_STRING;
     public static MetricRegistry METRICS;
     public static HdrBuilder BUILDER;
     public static Timer LATENCY_TIMER;
@@ -96,7 +98,9 @@ public class NettyClient implements Runnable {
 
             FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
             request.headers().set(HttpHeaderNames.HOST, host);
-//            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            if (COOKIE_STRING != null) {
+                request.headers().set(HttpHeaderNames.COOKIE, COOKIE_STRING);
+            }
 //            request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
             request.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
             ByteBuf byteBuf = Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);

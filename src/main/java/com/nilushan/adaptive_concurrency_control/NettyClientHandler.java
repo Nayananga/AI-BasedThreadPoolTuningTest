@@ -14,8 +14,11 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
+        int status = 0;
         if (msg instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) msg;
+            status = response.status().code();
+            NettyClient.COOKIE_STRING = response.headers().getAll(HttpHeaderNames.SET_COOKIE);
             System.out.println("STATUS: " + response.status());
             System.out.println("VERSION: " + response.protocolVersion());
             System.out.println();
@@ -28,17 +31,20 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
                 }
             }
         }
-        if (msg instanceof HttpContent) {
-            HttpContent content = (HttpContent) msg;
-            System.out.flush();
-            int currentThreadPoolSize = customThreadPool.getThreadPoolSize();
-            int newThreadPoolSize = Integer.parseInt(content.content().toString(CharsetUtil.UTF_8));
-            System.out.println("New ThreadPool Size: " + newThreadPoolSize);
+        if (status == 200) {
+            if (msg instanceof HttpContent) {
+                HttpContent content = (HttpContent) msg;
+                System.out.flush();
+                int currentThreadPoolSize = customThreadPool.getThreadPoolSize();
+                float temp = Float.parseFloat(content.content().toString(CharsetUtil.UTF_8));
+                int newThreadPoolSize = (int)temp;
+                System.out.println("New ThreadPool Size: " + newThreadPoolSize);
 
-            if (newThreadPoolSize > currentThreadPoolSize) {
-                customThreadPool.incrementPoolTo(newThreadPoolSize);
-            } else if (newThreadPoolSize < currentThreadPoolSize) {
-                customThreadPool.decrementPoolSizeTo(newThreadPoolSize);
+                if (newThreadPoolSize > currentThreadPoolSize) {
+                    customThreadPool.incrementPoolTo(newThreadPoolSize);
+                } else if (newThreadPoolSize < currentThreadPoolSize) {
+                    customThreadPool.decrementPoolSizeTo(newThreadPoolSize);
+                }
             }
         }
     }
