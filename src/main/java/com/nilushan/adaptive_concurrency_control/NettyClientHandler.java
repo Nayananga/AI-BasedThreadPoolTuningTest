@@ -2,7 +2,10 @@ package com.nilushan.adaptive_concurrency_control;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.CharsetUtil;
 
 public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> {
@@ -22,14 +25,6 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
             System.out.println("STATUS: " + response.status());
             System.out.println("VERSION: " + response.protocolVersion());
             System.out.println();
-
-            if (!response.headers().isEmpty()) {
-                for (String name : response.headers().names()) {
-                    for (String value : response.headers().getAll(name)) {
-                        System.out.println("HEADER: " + name + " = " + value);
-                    }
-                }
-            }
         }
         if (status == 200) {
             if (msg instanceof HttpContent) {
@@ -37,7 +32,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
                 System.out.flush();
                 int currentThreadPoolSize = customThreadPool.getThreadPoolSize();
                 float temp = Float.parseFloat(content.content().toString(CharsetUtil.UTF_8));
-                int newThreadPoolSize = (int)temp;
+                int newThreadPoolSize = (int) temp;
                 System.out.println("New ThreadPool Size: " + newThreadPoolSize);
 
                 if (newThreadPoolSize > currentThreadPoolSize) {
@@ -55,6 +50,4 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
         cause.printStackTrace();
         ctx.close();
     }
-
-
 }
