@@ -50,7 +50,7 @@ public class NettyClient implements Runnable {
 
     @Override
     public void run() {
-        EventLoopGroup group = new NioEventLoopGroup(50); //TODO: This should be reduced
+        EventLoopGroup group = new NioEventLoopGroup(1);
 
         try {
             Bootstrap clientBootstrap = new Bootstrap();
