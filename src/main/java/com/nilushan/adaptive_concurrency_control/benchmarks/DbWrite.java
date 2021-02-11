@@ -1,28 +1,33 @@
-package com.nilushan.adaptive_concurrency_control;
+package com.nilushan.adaptive_concurrency_control.benchmarks;
 
 import com.codahale.metrics.Timer;
+import com.nilushan.adaptive_concurrency_control.AdaptiveConcurrencyControl;
+import com.nilushan.adaptive_concurrency_control.NettyClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 
-import java.sql.*;
-import java.util.Random;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * Test to measure performance of Database Read
+ * Test to measure performance of Database Write
  */
-public class DbRead implements Runnable {
+public class DbWrite implements Runnable {
 
     private final FullHttpRequest msg;
     private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
 
-    public DbRead(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
+    public DbWrite(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
         this.msg = msg;
         this.ctx = ctx;
         this.timerContext = timerCtx;
@@ -36,31 +41,19 @@ public class DbRead implements Runnable {
             NettyClient.IN_PROGRESS_COUNT++;
             Connection connection = null;
             PreparedStatement stmt = null;
-            ResultSet rs = null;
-            Timestamp readTimestamp = null;
             try {
-                Random randId = new Random();
-                int toRead = randId.nextInt(50000) + 1;
                 connection = DriverManager.getConnection(
                         "jdbc:mysql://127.0.0.1:3306/echoserver?useSSL=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=10",
                         "root", "root");
-                String sql = "SELECT timestamp FROM Timestamp WHERE id=?";
+                Timestamp current = Timestamp.from(Instant.now()); // get current timestamp
+                String sql = "INSERT INTO Timestamp (timestamp) VALUES (?)";
                 stmt = connection.prepareStatement(sql);
-                stmt.setInt(1, toRead);
-                rs = stmt.executeQuery();
-                while (rs.next()) {
-                    readTimestamp = rs.getTimestamp("timestamp");
-                }
+                stmt.setTimestamp(1, current);
+                stmt.executeUpdate();
+                buf = Unpooled.copiedBuffer(current.toString().getBytes());
             } catch (Exception e) {
                 AdaptiveConcurrencyControl.LOGGER.error("Exception", e);
             } finally {
-                if (rs != null) {
-                    try {
-                        rs.close();
-                    } catch (Exception e) {
-                        AdaptiveConcurrencyControl.LOGGER.error("Exception", e);
-                    }
-                }
                 if (stmt != null) {
                     try {
                         stmt.close();
@@ -76,11 +69,9 @@ public class DbRead implements Runnable {
                     }
                 }
             }
-            String readTimestampStr = readTimestamp.toString() + "\n";
-            buf = Unpooled.copiedBuffer(readTimestampStr.getBytes());
             NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
-            AdaptiveConcurrencyControl.LOGGER.error("Exception in DbRead Run method", e);
+            AdaptiveConcurrencyControl.LOGGER.error("Exception in DbWrite Run method", e);
         }
 
         boolean keepAlive = HttpUtil.isKeepAlive(msg);
@@ -104,7 +95,6 @@ public class DbRead implements Runnable {
         ctx.flush();
         throughputTimerContext.stop();
         timerContext.stop(); // Stop Dropwizard metrics timer
-
     }
 
 }

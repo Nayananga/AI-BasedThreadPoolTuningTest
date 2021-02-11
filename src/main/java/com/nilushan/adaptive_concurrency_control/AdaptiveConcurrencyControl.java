@@ -1,6 +1,5 @@
 package com.nilushan.adaptive_concurrency_control;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,26 +1,29 @@
-package com.nilushan.adaptive_concurrency_control;
+package com.nilushan.adaptive_concurrency_control.benchmarks;
 
 import com.codahale.metrics.Timer;
+import com.nilushan.adaptive_concurrency_control.AdaptiveConcurrencyControl;
+import com.nilushan.adaptive_concurrency_control.NettyClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
-import io.netty.util.internal.ThreadLocalRandom;
+
+import java.util.Random;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * Test to measure performance of Square root calculation
+ * Test to measure performance of Primality check
  */
-public class Sqrt implements Runnable {
+public class Prime10k implements Runnable {
 
     private final FullHttpRequest msg;
     private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
 
-    public Sqrt(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
+    public Prime10k(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
         this.msg = msg;
         this.ctx = ctx;
         this.timerContext = timerCtx;
@@ -32,15 +35,19 @@ public class Sqrt implements Runnable {
         ByteBuf buf = null;
         try {
             NettyClient.IN_PROGRESS_COUNT++;
-            String resultString;
-            double randomNumber = ThreadLocalRandom.current().nextDouble(6000000000.0000000, 6900000000.0000000 + 1); // Generate
-            // random number between 6000000000.0000000 to 6900000000.0000000
-            double sqrt = Math.sqrt(randomNumber);
-            resultString = sqrt + "\n";
+            Random rand = new Random();
+            int number = rand.nextInt((10021) - 10000) + 10000;  //Generate random integer between 10000 and 10020
+            String resultString = "true";
+            for (int i = 2; i < number; i++) {
+                if (number % i == 0) {
+                    resultString = "false";
+                    break;
+                }
+            }
             buf = Unpooled.copiedBuffer(resultString.getBytes());
             NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
-            AdaptiveConcurrencyControl.LOGGER.error("Exception in Sqrt run method", e);
+            AdaptiveConcurrencyControl.LOGGER.error("Exception in Prime100k Run method", e);
         }
 
         boolean keepAlive = HttpUtil.isKeepAlive(msg);
@@ -65,5 +72,4 @@ public class Sqrt implements Runnable {
         throughputTimerContext.stop();
         timerContext.stop(); // Stop Dropwizard metrics timer
     }
-
 }

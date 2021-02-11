@@ -1,6 +1,8 @@
-package com.nilushan.adaptive_concurrency_control;
+package com.nilushan.adaptive_concurrency_control.benchmarks;
 
 import com.codahale.metrics.Timer;
+import com.nilushan.adaptive_concurrency_control.AdaptiveConcurrencyControl;
+import com.nilushan.adaptive_concurrency_control.NettyClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -15,13 +17,13 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 /**
  * Test to measure performance of Primality check
  */
-public class Prime100k implements Runnable {
+public class Prime10m implements Runnable {
 
     private final FullHttpRequest msg;
     private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
 
-    public Prime100k(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
+    public Prime10m(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
         this.msg = msg;
         this.ctx = ctx;
         this.timerContext = timerCtx;
@@ -34,7 +36,7 @@ public class Prime100k implements Runnable {
         try {
             NettyClient.IN_PROGRESS_COUNT++;
             Random rand = new Random();
-            int number = rand.nextInt((100021) - 100000) + 100000;  //Generate random integer between 100000 and 100020
+            int number = rand.nextInt((10000021) - 10000000) + 10000000;  //Generate random integer between 100000 and 100020
             String resultString = "true";
             for (int i = 2; i < number; i++) {
                 if (number % i == 0) {
@@ -45,7 +47,7 @@ public class Prime100k implements Runnable {
             buf = Unpooled.copiedBuffer(resultString.getBytes());
             NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
-            AdaptiveConcurrencyControl.LOGGER.error("Exception in Prime520 Run method", e);
+            AdaptiveConcurrencyControl.LOGGER.error("Exception in Prime10m Run method", e);
         }
 
         boolean keepAlive = HttpUtil.isKeepAlive(msg);
