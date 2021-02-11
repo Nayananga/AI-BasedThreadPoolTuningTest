@@ -33,7 +33,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<HttpObject> 
                 int currentThreadPoolSize = customThreadPool.getThreadPoolSize();
                 float temp = Float.parseFloat(content.content().toString(CharsetUtil.UTF_8));
                 int newThreadPoolSize = (int) temp;
-                System.out.println("New ThreadPool Size: " + newThreadPoolSize);
+                AdaptiveConcurrencyControl.LOGGER
+                        .info("New Maximum/Core ThreadPool Size: " + newThreadPoolSize + " Current Active ThreadPool Size: " + currentThreadPoolSize);
 
                 if (newThreadPoolSize > currentThreadPoolSize) {
                     customThreadPool.incrementPoolTo(newThreadPoolSize);

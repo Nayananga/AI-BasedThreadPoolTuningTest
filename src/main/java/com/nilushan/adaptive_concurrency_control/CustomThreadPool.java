@@ -50,9 +50,8 @@ public class CustomThreadPool {
         }
     }
 
-    /*
+    /**
      * Returns the size of the thread pool
-     *
      */
     public int getThreadPoolSize() {
         return executor.getPoolSize();
