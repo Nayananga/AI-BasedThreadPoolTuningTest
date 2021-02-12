@@ -1,6 +1,5 @@
 package com.nilushan.adaptive_concurrency_control;
 
-import com.codahale.metrics.Timer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,7 +13,6 @@ public class NettyServer {
     int port;
     String test;
     CustomThreadPool executingPool;
-    Timer.Context latencyTimerContext;
 
     public NettyServer(int portNum, String testName, CustomThreadPool pool) {
         this.port = portNum;
@@ -35,11 +33,10 @@ public class NettyServer {
 
                         @Override
                         public void initChannel(SocketChannel ch) {
-                            latencyTimerContext = NettyClient.LATENCY_TIMER.time();
                             ChannelPipeline p = ch.pipeline();
                             p.addLast(new HttpServerCodec());
                             p.addLast("aggregator", new HttpObjectAggregator(1048576));
-                            p.addLast(new NettyServerHandler(test, executingPool, latencyTimerContext));
+                            p.addLast(new NettyServerHandler(test, executingPool));
                         }
                     }).option(ChannelOption.SO_BACKLOG, 1000000).childOption(ChannelOption.SO_KEEPALIVE, true);
 

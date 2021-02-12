@@ -45,6 +45,7 @@ public class NettyClient implements Runnable {
         LATENCY_TIMER = BUILDER.buildAndRegisterTimer(METRICS, "ThroughputAndLatency");
         METRICS2 = new MetricRegistry();
         BUILDER2 = new HdrBuilder();
+        BUILDER2.resetReservoirOnSnapshot();
         THROUGHPUT_TIMER = BUILDER2.buildAndRegisterTimer(METRICS2, "ThroughputAndLatency2");
     }
 
@@ -85,7 +86,7 @@ public class NettyClient implements Runnable {
                     .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
                             + currentTenSecondRate + ", " + "rateDifference : " + rateDifference + ", "
                             + "currentInProgressCount : " + currentInProgressCount + ", " + "currentMeanLatency : "
-                            + currentMeanLatency + ", " + "current99PLatency" + current99PLatency);
+                            + currentMeanLatency + ", " + "current99PLatency : " + current99PLatency);
             JSONObject jsonObject = new JSONObject();
 
             oldTenSecondRate = currentTenSecondRate;

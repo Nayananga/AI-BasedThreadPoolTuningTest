@@ -13,17 +13,15 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     private final String testName;
     private final CustomThreadPool executingPool;
-    private final Timer.Context timerContext;
 
-    public NettyServerHandler(String name, CustomThreadPool pool, Timer.Context tContext) {
+    public NettyServerHandler(String name, CustomThreadPool pool) {
         this.testName = name;
         this.executingPool = pool;
-        this.timerContext = tContext;
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
-
+        Timer.Context timerContext = NettyClient.LATENCY_TIMER.time();
         switch (testName) {
             case "Prime1m":
                 executingPool.submitTask(new Prime1m(ctx, msg, timerContext));
