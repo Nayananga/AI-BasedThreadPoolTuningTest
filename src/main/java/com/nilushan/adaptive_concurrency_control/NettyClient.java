@@ -79,8 +79,8 @@ public class NettyClient implements Runnable {
             double rateDifference = (currentTenSecondRate - oldTenSecondRate) * 100 / oldTenSecondRate;
             int currentInProgressCount = IN_PROGRESS_COUNT;
             Snapshot latencySnapshot = LATENCY_TIMER.getSnapshot();
-            double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time to ms
-            double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
+            double currentMeanLatency = latencySnapshot.getMean() / 1000; // Divided by 1000000 to convert the time to ns
+            double current99PLatency = latencySnapshot.get99thPercentile() / 1000; // Divided by 1000000 to convert the time to ns
 
             AdaptiveConcurrencyControl.LOGGER
                     .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
@@ -92,6 +92,7 @@ public class NettyClient implements Runnable {
             oldTenSecondRate = currentTenSecondRate;
             oldInProgressCount = currentInProgressCount;
 
+            jsonObject.put("currentThreadPoolSize", currentThreadPoolSize);
             jsonObject.put("currentTenSecondRate", currentTenSecondRate);
             jsonObject.put("currentMeanLatency", currentMeanLatency);
             jsonObject.put("current99PLatency", current99PLatency);
