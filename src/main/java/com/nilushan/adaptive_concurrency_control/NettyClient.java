@@ -47,6 +47,9 @@ public class NettyClient implements Runnable {
         BUILDER2 = new HdrBuilder();
         BUILDER2.resetReservoirOnSnapshot();
         THROUGHPUT_TIMER = BUILDER2.buildAndRegisterTimer(METRICS2, "ThroughputAndLatency2");
+
+        AdaptiveConcurrencyControl.LOGGER.info(
+                "Thread pool size, Current 10 Second Throughput, Throughput Difference, In progress count, Average Latency, 99th percentile Latency");
     }
 
     @Override
@@ -79,14 +82,19 @@ public class NettyClient implements Runnable {
             double rateDifference = (currentTenSecondRate - oldTenSecondRate) * 100 / oldTenSecondRate;
             int currentInProgressCount = IN_PROGRESS_COUNT;
             Snapshot latencySnapshot = LATENCY_TIMER.getSnapshot();
-            double currentMeanLatency = latencySnapshot.getMean() / 1000; // Divided by 1000000 to convert the time to ns
-            double current99PLatency = latencySnapshot.get99thPercentile() / 1000; // Divided by 1000000 to convert the time to ns
+            double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time to ms
+            double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
 
             AdaptiveConcurrencyControl.LOGGER
                     .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
                             + currentTenSecondRate + ", " + "rateDifference : " + rateDifference + ", "
                             + "currentInProgressCount : " + currentInProgressCount + ", " + "currentMeanLatency : "
                             + currentMeanLatency + ", " + "current99PLatency : " + current99PLatency);
+
+            AdaptiveConcurrencyControl.LOGGER
+                    .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
+                            + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency);
+
             JSONObject jsonObject = new JSONObject();
 
             oldTenSecondRate = currentTenSecondRate;
@@ -103,7 +111,6 @@ public class NettyClient implements Runnable {
             if (COOKIE_STRING != null) {
                 request.headers().set(HttpHeaderNames.COOKIE, COOKIE_STRING);
             }
-//            request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
             request.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
             ByteBuf byteBuf = Unpooled.copiedBuffer(jsonObject.toString(), StandardCharsets.UTF_8);
             request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
