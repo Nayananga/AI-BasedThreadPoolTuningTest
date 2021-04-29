@@ -49,7 +49,7 @@ public class NettyClient implements Runnable {
         THROUGHPUT_TIMER = BUILDER2.buildAndRegisterTimer(METRICS2, "ThroughputAndLatency2");
 
         AdaptiveConcurrencyControl.LOGGER.info(
-                "Thread pool size, Current 10 Second Throughput, Throughput Difference, In progress count, Average Latency, 99th percentile Latency");
+                "Thread pool size, Current 10 Second Throughput, Throughput Difference, In pogress count, Average Latency, 99th percentile Latency");
     }
 
     @Override
@@ -85,11 +85,11 @@ public class NettyClient implements Runnable {
             double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time to ms
             double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
 
-            AdaptiveConcurrencyControl.LOGGER
-                    .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
-                            + currentTenSecondRate + ", " + "rateDifference : " + rateDifference + ", "
-                            + "currentInProgressCount : " + currentInProgressCount + ", " + "currentMeanLatency : "
-                            + currentMeanLatency + ", " + "current99PLatency : " + current99PLatency);
+//            AdaptiveConcurrencyControl.LOGGER
+//                    .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
+//                            + currentTenSecondRate + ", " + "rateDifference : " + rateDifference + ", "
+//                            + "currentInProgressCount : " + currentInProgressCount + ", " + "currentMeanLatency : "
+//                            + currentMeanLatency + ", " + "current99PLatency : " + current99PLatency);
 
             AdaptiveConcurrencyControl.LOGGER
                     .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
@@ -117,6 +117,10 @@ public class NettyClient implements Runnable {
             request.content().clear().writeBytes(byteBuf);
 
             channelFuture.channel().writeAndFlush(request);
+
+            if(currentTenSecondRate <= 0.0) {
+                System.exit(0);
+            }
 
             // Wait for the server to close the connection.
             channelFuture.channel().closeFuture().sync();
