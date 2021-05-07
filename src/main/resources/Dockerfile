@@ -7,3 +7,5 @@ ENV MYSQL_PASSWORD=password
 ENV MYSQL_DATABASE=echoserver
 
 COPY echoserver.sql /docker-entrypoint-initdb.d/
+
+EXPOSE 30000

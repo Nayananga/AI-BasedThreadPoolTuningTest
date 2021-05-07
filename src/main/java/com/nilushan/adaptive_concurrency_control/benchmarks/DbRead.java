@@ -45,7 +45,7 @@ public class DbRead implements Runnable {
                 Random randId = new Random();
                 int toRead = randId.nextInt(50000) + 1;
                 connection = DriverManager.getConnection(
-                        "jdbc:mysql://127.0.0.1:3306/echoserver?allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=10",
+                        "jdbc:mysql://127.0.0.1:30000/echoserver?allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=10",
                         "nayananga", "password");
                 String sql = "SELECT timestamp FROM Timestamp WHERE id=1";
                 stmt = connection.prepareStatement(sql);
