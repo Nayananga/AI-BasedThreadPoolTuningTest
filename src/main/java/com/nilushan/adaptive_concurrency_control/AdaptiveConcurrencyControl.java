@@ -11,6 +11,7 @@ public class AdaptiveConcurrencyControl {
 
     private static final int THREAD_POOL_MODIFICATION_INITIAL_DELAY = 60;
     private static final int THREAD_POOL_MODIFICATION_PERIOD = 60;
+    private static final int SLIDING_WINDOW = 10;
     private static final String CLIENT_HOST = "127.0.0.1";
     private static final int CLIENT_PORT = 5000;
     private static final int SERVER_PORT = 15000;
@@ -32,7 +33,7 @@ public class AdaptiveConcurrencyControl {
         // to run the periodic thread count adjustment
         CustomThreadPool customThreadPool = new CustomThreadPool(initWorkerThreads); // Create the thread pool to handle
         // workload processing
-        threadPoolSizeModifier.scheduleAtFixedRate(new NettyClient(CLIENT_PORT, CLIENT_HOST, optimization, customThreadPool),
+        threadPoolSizeModifier.scheduleAtFixedRate(new NettyClient(CLIENT_PORT, CLIENT_HOST, optimization, SLIDING_WINDOW, customThreadPool),
                 THREAD_POOL_MODIFICATION_INITIAL_DELAY, THREAD_POOL_MODIFICATION_PERIOD, TimeUnit.SECONDS);
         new NettyServer(SERVER_PORT, testName, customThreadPool).start();
 

@@ -16,6 +16,7 @@ import org.json.simple.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 
 public class NettyClient implements Runnable {
@@ -29,23 +30,24 @@ public class NettyClient implements Runnable {
     public static Timer THROUGHPUT_TIMER;
     public static int oldInProgressCount;
     private static double oldTenSecondRate;
-    int port;
+    int port, sliding_window;
     String host, optimization;
     CustomThreadPool customThreadPool;
 
-    public NettyClient(int port, String host, String optimization, CustomThreadPool customThreadPool) {
+    public NettyClient(int port, String host, String optimization, int sliding_window, CustomThreadPool customThreadPool) {
         this.port = port;
         this.host = host;
         this.optimization = optimization;
+        this.sliding_window = sliding_window;
         this.customThreadPool = customThreadPool;
         METRICS = new MetricRegistry();
         BUILDER = new HdrBuilder();
-        BUILDER.resetReservoirOnSnapshot();
+        BUILDER.resetReservoirPeriodicallyByChunks(Duration.ofSeconds(sliding_window), 10); // Chunks
         BUILDER.withPredefinedPercentiles(new double[]{0.99}); // Predefine required percentiles
         LATENCY_TIMER = BUILDER.buildAndRegisterTimer(METRICS, "ThroughputAndLatency");
         METRICS2 = new MetricRegistry();
         BUILDER2 = new HdrBuilder();
-        BUILDER2.resetReservoirOnSnapshot();
+        BUILDER2.resetReservoirPeriodicallyByChunks(Duration.ofSeconds(sliding_window), 10); // Chunks
         THROUGHPUT_TIMER = BUILDER2.buildAndRegisterTimer(METRICS2, "ThroughputAndLatency2");
 
         AdaptiveConcurrencyControl.LOGGER.info(

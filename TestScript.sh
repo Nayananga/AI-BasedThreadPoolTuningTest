@@ -1,5 +1,8 @@
 #!/bin/bash
 
+docker kill some-redis
+docker rm some-redis
+docker run --name some-redis -d -p 6379:6379 redis
 fuser -k -n tcp 15000
 
 ##Concurrency 1
