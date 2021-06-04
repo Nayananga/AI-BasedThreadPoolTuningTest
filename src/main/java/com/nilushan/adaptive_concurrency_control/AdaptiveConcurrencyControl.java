@@ -9,12 +9,12 @@ import java.util.concurrent.TimeUnit;
 
 public class AdaptiveConcurrencyControl {
 
-    public static final int SLIDING_WINDOW = 10;
-    public static final String CLIENT_HOST = "127.0.0.1";
-    public static final int CLIENT_PORT = 5000;
-    public static final int SERVER_PORT = 15000;
     private static final int THREAD_POOL_MODIFICATION_INITIAL_DELAY = 60;
     private static final int THREAD_POOL_MODIFICATION_PERIOD = 60;
+    public static final int SLIDING_WINDOW = 10;
+    public static final String CLIENT_HOST = "192.168.1.3";
+    public static final int CLIENT_PORT = 5000;
+    public static final int SERVER_PORT = 15000;
     public static Logger LOGGER = LoggerFactory.getLogger(AdaptiveConcurrencyControl.class);
 
     public static void main(String[] args) throws Exception {

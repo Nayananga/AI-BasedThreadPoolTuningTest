@@ -109,9 +109,9 @@ public class NettyClient implements Runnable {
 
             channelFuture.channel().writeAndFlush(request);
 
-            if (currentTenSecondRate <= 0.0) {
-                System.exit(0);
-            }
+//            if (currentTenSecondRate <= 0.0) {
+//                System.exit(0);
+//            }
 
             // Wait for the server to close the connection.
             channelFuture.channel().closeFuture().sync();
