@@ -69,8 +69,7 @@ public class CustomThreadPool {
         if (n > executor.getCorePoolSize()) {
             executor.setMaximumPoolSize(n);
             executor.setCorePoolSize(n);
-        }
-        else if (n < executor.getCorePoolSize()) {
+        } else if (n < executor.getCorePoolSize()) {
             decrementPoolSizeTo(n);
 
         }

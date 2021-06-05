@@ -22,19 +22,20 @@ public class Prime10k implements Runnable {
     private final FullHttpRequest msg;
     private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
+    private final Timer.Context throughputContext;
 
-    public Prime10k(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
+    public Prime10k(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx, Timer.Context throughputContext) {
         this.msg = msg;
         this.ctx = ctx;
         this.timerContext = timerCtx;
+        this.throughputContext = throughputContext;
     }
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
+        NettyClient.IN_PROGRESS_COUNT++;
         ByteBuf buf = null;
         try {
-            NettyClient.IN_PROGRESS_COUNT++;
             Random rand = new Random();
             int number = rand.nextInt((10021) - 10000) + 10000;  //Generate random integer between 10000 and 10020
             String resultString = "true";
@@ -45,7 +46,6 @@ public class Prime10k implements Runnable {
                 }
             }
             buf = Unpooled.copiedBuffer(resultString.getBytes());
-            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in Prime100k Run method", e);
         }
@@ -69,7 +69,8 @@ public class Prime10k implements Runnable {
             ctx.write(response);
         }
         ctx.flush();
-        throughputTimerContext.stop();
+        NettyClient.IN_PROGRESS_COUNT--;
+        throughputContext.stop();
         timerContext.stop(); // Stop Dropwizard metrics timer
     }
 }

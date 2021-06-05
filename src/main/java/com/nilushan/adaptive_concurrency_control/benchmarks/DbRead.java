@@ -23,19 +23,20 @@ public class DbRead implements Runnable {
     private final FullHttpRequest msg;
     private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
+    private final Timer.Context throughputContext;
 
-    public DbRead(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
+    public DbRead(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx, Timer.Context throughputContext) {
         this.msg = msg;
         this.ctx = ctx;
         this.timerContext = timerCtx;
+        this.throughputContext = throughputContext;
     }
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
+        NettyClient.IN_PROGRESS_COUNT++;
         ByteBuf buf = null;
         try {
-            NettyClient.IN_PROGRESS_COUNT++;
             Connection connection = null;
             PreparedStatement stmt = null;
             ResultSet rs = null;
@@ -80,7 +81,6 @@ public class DbRead implements Runnable {
             }
             String readTimestampStr = readTimestamp.toString() + "\n";
             buf = Unpooled.copiedBuffer(readTimestampStr.getBytes());
-            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in DbRead Run method", e);
         }
@@ -104,7 +104,8 @@ public class DbRead implements Runnable {
             ctx.write(response);
         }
         ctx.flush();
-        throughputTimerContext.stop();
+        NettyClient.IN_PROGRESS_COUNT--;
+        throughputContext.stop();
         timerContext.stop(); // Stop Dropwizard metrics timer
 
     }

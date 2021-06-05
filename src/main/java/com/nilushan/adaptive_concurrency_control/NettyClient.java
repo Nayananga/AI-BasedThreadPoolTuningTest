@@ -30,24 +30,19 @@ public class NettyClient implements Runnable {
     public static Timer THROUGHPUT_TIMER;
     public static int oldInProgressCount;
     private static double oldTenSecondRate;
-    int port, sliding_window;
-    String host, optimization;
+    String optimization;
     CustomThreadPool customThreadPool;
 
-    public NettyClient(int port, String host, String optimization, int sliding_window, CustomThreadPool customThreadPool) {
-        this.port = port;
-        this.host = host;
+    public NettyClient(String optimization, CustomThreadPool customThreadPool) {
         this.optimization = optimization;
-        this.sliding_window = sliding_window;
         this.customThreadPool = customThreadPool;
         METRICS = new MetricRegistry();
         BUILDER = new HdrBuilder();
-        BUILDER.resetReservoirPeriodicallyByChunks(Duration.ofSeconds(sliding_window), 10); // Chunks
+        BUILDER.resetReservoirPeriodicallyByChunks(Duration.ofSeconds(AdaptiveConcurrencyControl.SLIDING_WINDOW), 10); // Chunks
         BUILDER.withPredefinedPercentiles(new double[]{0.99}); // Predefine required percentiles
         LATENCY_TIMER = BUILDER.buildAndRegisterTimer(METRICS, "ThroughputAndLatency");
         METRICS2 = new MetricRegistry();
         BUILDER2 = new HdrBuilder();
-        BUILDER2.resetReservoirPeriodicallyByChunks(Duration.ofSeconds(sliding_window), 10); // Chunks
         THROUGHPUT_TIMER = BUILDER2.buildAndRegisterTimer(METRICS2, "ThroughputAndLatency2");
 
         AdaptiveConcurrencyControl.LOGGER.info(
@@ -64,7 +59,7 @@ public class NettyClient implements Runnable {
             clientBootstrap.group(group);
             clientBootstrap.channel(NioSocketChannel.class);
             clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-            clientBootstrap.remoteAddress(new InetSocketAddress(host, port));
+            clientBootstrap.remoteAddress(new InetSocketAddress(AdaptiveConcurrencyControl.CLIENT_HOST, AdaptiveConcurrencyControl.CLIENT_PORT));
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
                 @Override
@@ -87,12 +82,6 @@ public class NettyClient implements Runnable {
             double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time to ms
             double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
 
-//            AdaptiveConcurrencyControl.LOGGER
-//                    .info("currentThreadPoolSize : " + currentThreadPoolSize + ", " + "currentTenSecondRate : "
-//                            + currentTenSecondRate + ", " + "rateDifference : " + rateDifference + ", "
-//                            + "currentInProgressCount : " + currentInProgressCount + ", " + "currentMeanLatency : "
-//                            + currentMeanLatency + ", " + "current99PLatency : " + current99PLatency);
-
             AdaptiveConcurrencyControl.LOGGER
                     .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
                             + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency);
@@ -109,7 +98,7 @@ public class NettyClient implements Runnable {
             jsonObject.put("optimization", optimization);
 
             FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
-            request.headers().set(HttpHeaderNames.HOST, host);
+            request.headers().set(HttpHeaderNames.HOST, AdaptiveConcurrencyControl.CLIENT_HOST);
             if (COOKIE_STRING != null) {
                 request.headers().set(HttpHeaderNames.COOKIE, COOKIE_STRING);
             }
@@ -120,7 +109,7 @@ public class NettyClient implements Runnable {
 
             channelFuture.channel().writeAndFlush(request);
 
-            if(currentTenSecondRate <= 0.0) {
+            if (currentTenSecondRate <= 0.0) {
                 System.exit(0);
             }
 

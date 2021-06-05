@@ -10,12 +10,10 @@ import io.netty.handler.codec.http.HttpServerCodec;
 
 public class NettyServer {
 
-    int port;
     String test;
     CustomThreadPool executingPool;
 
-    public NettyServer(int portNum, String testName, CustomThreadPool pool) {
-        this.port = portNum;
+    public NettyServer(String testName, CustomThreadPool pool) {
         this.test = testName;
         this.executingPool = pool;
     }
@@ -40,7 +38,7 @@ public class NettyServer {
                         }
                     }).option(ChannelOption.SO_BACKLOG, 1000000).childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            ChannelFuture f = b.bind(port).sync();
+            ChannelFuture f = b.bind(AdaptiveConcurrencyControl.SERVER_PORT).sync();
 
             f.channel().closeFuture().sync();
         } finally {

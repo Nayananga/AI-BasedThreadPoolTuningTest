@@ -19,30 +19,31 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequ
     @Override
     public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
         Timer.Context timerContext = NettyClient.LATENCY_TIMER.time();
+        Timer.Context throughputContext = NettyClient.THROUGHPUT_TIMER.time();
         switch (testName) {
             case "Prime10k":
-                executingPool.submitTask(new Prime10k(ctx, msg, timerContext));
+                executingPool.submitTask(new Prime10k(ctx, msg, timerContext, throughputContext));
                 break;
             case "Prime100k":
-                executingPool.submitTask(new Prime100k(ctx, msg, timerContext));
+                executingPool.submitTask(new Prime100k(ctx, msg, timerContext, throughputContext));
                 break;
             case "Prime1m":
-                executingPool.submitTask(new Prime1m(ctx, msg, timerContext));
+                executingPool.submitTask(new Prime1m(ctx, msg, timerContext, throughputContext));
                 break;
             case "Prime10m":
-                executingPool.submitTask(new Prime10m(ctx, msg, timerContext));
+                executingPool.submitTask(new Prime10m(ctx, msg, timerContext, throughputContext));
                 break;
             case "DbWrite":
-                executingPool.submitTask(new DbWrite(ctx, msg, timerContext));
+                executingPool.submitTask(new DbWrite(ctx, msg, timerContext, throughputContext));
                 break;
             case "DbRead":
-                executingPool.submitTask(new DbRead(ctx, msg, timerContext));
+                executingPool.submitTask(new DbRead(ctx, msg, timerContext, throughputContext));
                 break;
             case "Sqrt":
-                executingPool.submitTask(new Sqrt(ctx, msg, timerContext));
+                executingPool.submitTask(new Sqrt(ctx, msg, timerContext, throughputContext));
                 break;
             case "Factorial":
-                executingPool.submitTask(new Factorial(ctx, msg, timerContext));
+                executingPool.submitTask(new Factorial(ctx, msg, timerContext, throughputContext));
                 break;
         }
     }

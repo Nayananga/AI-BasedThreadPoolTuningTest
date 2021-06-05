@@ -21,16 +21,18 @@ public class Sqrt implements Runnable {
     private final FullHttpRequest msg;
     private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
+    private final Timer.Context throughputContext;
 
-    public Sqrt(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx) {
+    public Sqrt(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx, Timer.Context throughputContext) {
         this.msg = msg;
         this.ctx = ctx;
         this.timerContext = timerCtx;
+        this.throughputContext = throughputContext;
     }
 
     @Override
     public void run() {
-        Timer.Context throughputTimerContext = NettyClient.THROUGHPUT_TIMER.time();
+        NettyClient.IN_PROGRESS_COUNT++;
         ByteBuf buf = null;
         try {
             NettyClient.IN_PROGRESS_COUNT++;
@@ -40,7 +42,6 @@ public class Sqrt implements Runnable {
             double sqrt = Math.sqrt(randomNumber);
             resultString = sqrt + "\n";
             buf = Unpooled.copiedBuffer(resultString.getBytes());
-            NettyClient.IN_PROGRESS_COUNT--;
         } catch (Exception e) {
             AdaptiveConcurrencyControl.LOGGER.error("Exception in Sqrt run method", e);
         }
@@ -64,7 +65,8 @@ public class Sqrt implements Runnable {
             ctx.write(response);
         }
         ctx.flush();
-        throughputTimerContext.stop();
+        NettyClient.IN_PROGRESS_COUNT--;
+        throughputContext.stop();
         timerContext.stop(); // Stop Dropwizard metrics timer
     }
 
