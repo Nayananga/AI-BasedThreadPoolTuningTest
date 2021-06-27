@@ -44,7 +44,7 @@ public class DbWrite implements Runnable {
             PreparedStatement stmt = null;
             try {
                 connection = DriverManager.getConnection(
-                        "jdbc:mysql://127.0.0.1:30000/echoserver?useSSL=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=10",
+                        "jdbc:mysql://192.168.1.6:3306/echoserver?useSSL=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=10",
                         "nayananga", "password");
                 Timestamp current = Timestamp.from(Instant.now()); // get current timestamp
                 String sql = "INSERT INTO Timestamp (timestamp) VALUES (?)";
