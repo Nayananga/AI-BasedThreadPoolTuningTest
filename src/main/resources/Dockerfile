@@ -1,11 +1,10 @@
-FROM mysql/mysql-server:latest
+FROM mysql:latest
 
-
-ENV MYSQL_ALLOW_EMPTY_PASSWORD=true
+ENV MYSQL_ROOT_PASSWORD=1234
+ENV MYSQL_DATABASE=echoserver
 ENV MYSQL_USER=nayananga
 ENV MYSQL_PASSWORD=password
-ENV MYSQL_DATABASE=echoserver
 
-COPY echoserver.sql /docker-entrypoint-initdb.d/
+ADD echoserver.sql /docker-entrypoint-initdb.d
 
-EXPOSE 30000
+EXPOSE 3306
