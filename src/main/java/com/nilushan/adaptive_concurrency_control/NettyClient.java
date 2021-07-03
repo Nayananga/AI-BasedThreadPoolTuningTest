@@ -46,7 +46,7 @@ public class NettyClient implements Runnable {
         THROUGHPUT_TIMER = BUILDER2.buildAndRegisterTimer(METRICS2, "ThroughputAndLatency2");
 
         AdaptiveConcurrencyControl.LOGGER.info(
-                "Thread pool size, Current 10 Second Throughput, Throughput Difference, In pogress count, Average Latency, 99th percentile Latency");
+                "Thread pool size, Current 10 Second Throughput, Throughput Difference, In pogress count, Average Latency, 99th percentile Latency, Concurrency");
     }
 
     @Override
@@ -81,10 +81,11 @@ public class NettyClient implements Runnable {
             Snapshot latencySnapshot = LATENCY_TIMER.getSnapshot();
             double currentMeanLatency = latencySnapshot.getMean() / 1000000; // Divided by 1000000 to convert the time to ms
             double current99PLatency = latencySnapshot.get99thPercentile() / 1000000; // Divided by 1000000 to convert the time to ms
+            int concurrency = StatusData.getActiveConnectionCounter();
 
             AdaptiveConcurrencyControl.LOGGER
                     .info(currentThreadPoolSize + ", " + currentTenSecondRate + ", " + rateDifference + ", "
-                            + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency);
+                            + currentInProgressCount + ", " + currentMeanLatency + ", " + current99PLatency + ", " + concurrency);
 
             JSONObject jsonObject = new JSONObject();
 
@@ -95,6 +96,7 @@ public class NettyClient implements Runnable {
             jsonObject.put("currentTenSecondRate", currentTenSecondRate);
             jsonObject.put("currentMeanLatency", currentMeanLatency);
             jsonObject.put("current99PLatency", current99PLatency);
+            jsonObject.put("concurrency", concurrency);
             jsonObject.put("optimization", optimization);
 
             FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");

@@ -17,6 +17,18 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        StatusData.decreaseConnectionCounter();
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        StatusData.increaseConnectionCounter();
+    }
+
+    @Override
     public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) {
         Timer.Context timerContext = NettyClient.LATENCY_TIMER.time();
         Timer.Context throughputContext = NettyClient.THROUGHPUT_TIMER.time();
