@@ -35,7 +35,6 @@ public class Sqrt implements Runnable {
         NettyClient.IN_PROGRESS_COUNT++;
         ByteBuf buf = null;
         try {
-            NettyClient.IN_PROGRESS_COUNT++;
             String resultString;
             double randomNumber = ThreadLocalRandom.current().nextDouble(6000000000.0000000, 6900000000.0000000 + 1); // Generate
             // random number between 6000000000.0000000 to 6900000000.0000000

@@ -57,6 +57,12 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequ
             case "Factorial":
                 executingPool.submitTask(new Factorial(ctx, msg, timerContext, throughputContext));
                 break;
+            case "Pass":
+                executingPool.submitTask(new Pass(msg, timerContext, throughputContext));
+                break;
+            case "Echo":
+                executingPool.submitTask(new Echo(ctx, msg, timerContext, throughputContext));
+                break;
         }
     }
 
