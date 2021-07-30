@@ -4,26 +4,9 @@ import com.codahale.metrics.Timer;
 import com.nilushan.adaptive_concurrency_control.AdaptiveConcurrencyControl;
 import com.nilushan.adaptive_concurrency_control.NettyClient;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.*;
 
 import java.net.InetSocketAddress;
 
@@ -36,11 +19,13 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class Pass implements Runnable {
 
     private final FullHttpRequest msg;
+    private final ChannelHandlerContext ctx;
     private final Timer.Context timerContext;
     private final Timer.Context throughputContext;
 
-    public Pass(FullHttpRequest msg, Timer.Context timerCtx, Timer.Context throughputContext) {
+    public Pass(ChannelHandlerContext ctx, FullHttpRequest msg, Timer.Context timerCtx, Timer.Context throughputContext) {
         this.msg = msg;
+        this.ctx = ctx;
         this.timerContext = timerCtx;
         this.throughputContext = throughputContext;
     }
@@ -48,14 +33,13 @@ public class Pass implements Runnable {
     @Override
     public void run() {
         NettyClient.IN_PROGRESS_COUNT++;
-        EventLoopGroup passThroughGroup = new NioEventLoopGroup();
 
         try {
             Bootstrap passThroughClientBootstrap = new Bootstrap();
-            passThroughClientBootstrap.group(passThroughGroup);
+            passThroughClientBootstrap.group(ctx.channel().eventLoop());
             passThroughClientBootstrap.channel(NioServerSocketChannel.class);
-            passThroughClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-            passThroughClientBootstrap.remoteAddress(new InetSocketAddress("REMOTE_HOST", 30000));
+//            passThroughClientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+            passThroughClientBootstrap.remoteAddress(new InetSocketAddress("localhost", 30000));
             passThroughClientBootstrap.option(ChannelOption.AUTO_READ, false);
             passThroughClientBootstrap.handler(new PassHandler(timerContext, throughputContext));
             Channel f = passThroughClientBootstrap.connect().sync().channel();
@@ -71,7 +55,7 @@ public class Pass implements Runnable {
                 request.content().clear().writeBytes(msg.content());
 
             }
-            request.headers().set(HttpHeaderNames.HOST, "REMOTE_HOST");
+            request.headers().set(HttpHeaderNames.HOST, "localhost");
 
             f.writeAndFlush(request);
 
@@ -80,12 +64,6 @@ public class Pass implements Runnable {
 
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                passThroughGroup.shutdownGracefully().sync();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

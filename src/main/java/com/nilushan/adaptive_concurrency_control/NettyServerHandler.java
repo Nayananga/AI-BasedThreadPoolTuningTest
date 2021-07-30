@@ -17,12 +17,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-        StatusData.decreaseConnectionCounter();
-    }
-
-    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         StatusData.increaseConnectionCounter();
@@ -58,12 +52,18 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<FullHttpRequ
                 executingPool.submitTask(new Factorial(ctx, msg, timerContext, throughputContext));
                 break;
             case "Pass":
-                executingPool.submitTask(new Pass(msg, timerContext, throughputContext));
+                executingPool.submitTask(new Pass(ctx, msg, timerContext, throughputContext));
                 break;
             case "Echo":
                 executingPool.submitTask(new Echo(ctx, msg, timerContext, throughputContext));
                 break;
         }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        StatusData.decreaseConnectionCounter();
     }
 
     @Override
