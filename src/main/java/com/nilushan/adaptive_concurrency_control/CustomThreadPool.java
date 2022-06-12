@@ -31,26 +31,6 @@ public class CustomThreadPool {
     }
 
     /**
-     * Increments the pool size by n. No upper limit on the pool size
-     */
-    public void incrementPoolSizeBy(int n) {
-        executor.setMaximumPoolSize(executor.getMaximumPoolSize() + n);
-        executor.setCorePoolSize(executor.getCorePoolSize() + n);
-    }
-
-    /**
-     * Decrement the pool size by n. Minimum allowed size is 1
-     *
-     * @param n the number to increment by
-     */
-    public void decrementPoolSizeBy(int n) {
-        if (executor.getCorePoolSize() - n > 0 && executor.getMaximumPoolSize() - n > 0) {
-            executor.setCorePoolSize(executor.getCorePoolSize() - n);
-            executor.setMaximumPoolSize(executor.getMaximumPoolSize() - n);
-        }
-    }
-
-    /**
      * Returns the size of the thread pool
      */
     public int getThreadPoolSize() {
